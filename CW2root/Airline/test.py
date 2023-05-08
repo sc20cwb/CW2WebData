@@ -6,22 +6,27 @@ import requests
 import json
 import requests
 
-url_bookinggg = "http://127.0.0.1:8000/booking/BB12"
-"""
+
+url_bookinggg = "http://127.0.0.1:8000/bookings/"
+
 data = {
-    "PassportNumber": 12345678,
-    "BookingRef": "BB12",
-    "FlightCode": "CWB123",
+    "passport_number": 12345678,
+    "booking_ref": "BB12",
+    "flight": "CWB123",
 }
 
 r = requests.post(url_bookinggg, data=data)
 
 if r.status_code == 204: 
-    print("Flight send successfylly")
+    print(r.status_code)
+    print("New Booking saved")
+    
 else:
     print(r.status_code)
-    print("Unsuccessfull")
-"""
+    print("Could not save the booking")
+
+url_bookinggg = "http://127.0.0.1:8000/bookings/?booking_ref=BB12"
+
 r = requests.delete(url_bookinggg)
 
 if r.status_code == 204:
@@ -30,17 +35,6 @@ else:
     print("Failed to cancel booking")
 
 
-def newFlights(request):
-    if request.method == "POST":
-        FlightCode = request.POST.get("FlighCode")
-        DepartureDateTime = request.POST.get("DepartureDateTime")
-        ArrivalDateTime = request.POST.get("ArrivalDateTime")
-        DurationTime = request.POST.get("DurationTime")
-        BasePrice = request.POST.get("BasePrice")
-        TotalSeats = request.POST.get("TotalSeats")
-        AvailableSeats = request.POST.get("AvailableSeats")
-        AirlineName = request.POST.get("AirlineName")
-        DepartureAirport = request.POST.get("DepartureAirport")
-        DestinationAirport = request.POST.get("DestinationAirport")   
+
 
 
