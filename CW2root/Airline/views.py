@@ -8,7 +8,7 @@ import requests
 import json
 
 def index(request):
-    return HttpResponse("<h1>API Airlines</h1>")
+    return HttpResponse("<h1>API Airlines</h1>", status = 200)
 
 
 @csrf_exempt
@@ -18,29 +18,36 @@ def newBooking(request):
         passport_number = request.POST.get("passport_number")
         bookingRef = request.POST.get("booking_ref")
         flightCode = request.POST.get("flight")
-        flight = Flight.objects.get(flight_code = flightCode)
-        print(flight)
-        if flight:
-            #Saving Booking information in the database:
-            Booking.objects.create(bookingRef = bookingRef ,passport_number = passport_number, flight = flight)
+        try: 
+            flight = Flight.objects.get(flight_code = flightCode)
+            if flight:
+                #Saving Booking information in the database:
+                Booking.objects.create(bookingRef = bookingRef ,passport_number = passport_number, flight = flight)
 
-            #Update number of available seats in the database:
-            flight.available_seats -= 1
-            flight.save()
-
-            return True
-        else:
+                #Update number of available seats in the database:
+                flight.available_seats -= 1
+                flight.save()
+                return True
+            else:
+                return False
+        except Flight.DoesNotExist:
+            return False
+        except: 
             return False
 
-
+            
+        
 @csrf_exempt
 #Cancel a booking:  
 def cancelBooking(request):
 
     #Retreiving the booking to cancel:
     booking = Booking.objects.get(bookingRef = request.GET.get('booking_ref'))
+    print(request.GET.get('booking_ref'))
     flight = booking.flight
-    print(flight)
+    flight.available_seats +=1
+    flight.save()
+    
     if booking:
         booking.delete()
         return True
@@ -61,7 +68,7 @@ def booking(request):
         if a ==True:
             return HttpResponse("Booking deleted successfully.", status = 204)
         else: 
-            return HttpResponse("Could not delete the booking.", status = 404)
+            return HttpResponse("Could not delete the booking.", status = 400)
         
 
 @api_view(['PATCH', 'POST', 'DELETE'])
@@ -82,7 +89,7 @@ def newFlights(request):
         print(AirlineName)
         print(DepartureAirport)
         print(DestinationAirport)
-        return HttpResponse("DATA.", status = 204)
+        return HttpResponse("DATA.", status = 201)
     elif request.method == "PATCH":
 
         FlightCode = request.data.get("fligh_code")
@@ -100,42 +107,16 @@ def newFlights(request):
         print(DepartureAirport)
         print(DestinationAirport)
 
-        return HttpResponse(" PATCH DATA.", status = 204)
+        return HttpResponse(" PATCH DATA.", status = 200)
     elif request.method == "DELETE":
         f = Flight.objects.get(flight_code = request.GET.get('flight_code'))
         print(f)
         print(request.GET.get('flight_code'))
-        return HttpResponse("DELETE DATA.", status = 204)
+        return HttpResponse("DELETE DATA.", status = 200)
     else:
         return HttpResponse("NO DATA.", status = 404) 
 
-"""
-#Sends a list of all available flights to the Aviation Authorities:
-def availableFlights(request):
-    if request.method == 'GET':
-        flight_list = []
-        flights = Flight.objects.filter(available_seats__gt=0)
 
-        #Saves all the flights as a list of dictionaries.
-        for f in flights:
-            duration_time = f.duration_time.seconds
-            data = {
-                    "flight_code": f.flight_code,
-                    "departure_date_time": f.departure_date_time.isoformat(),
-                    "arrival_date_time": f.arrival_date_time.isoformat(),
-                    "duration_time": duration_time,
-                    "base_price": f.base_price,
-                    "total_seats": f.total_seats,
-                    "available_seats": f.available_seats,
-                    "airline": f.airline.name,
-                    "departure_airport": f.departure_airport.name,
-                    "destination_airport": f.destination_airport.name,
-                }
-            flight_list.append(data)
-
-        return JsonResponse({'ListofFlights': flight_list})
-    else:
-        return HttpResponseNotAllowed(['GET'])"""
     
 
 

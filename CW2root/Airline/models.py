@@ -4,7 +4,7 @@ from django.core.validators import ValidationError
 import requests
 from datetime import timedelta
 
-
+authority_url = "http://sc20osc.pythonanywhere.com/api/flights/"
 # Create your models here.
 
 class Airline(models.Model):
@@ -39,13 +39,13 @@ class Flight(models.Model):
 
     def save(self, *args, **kwargs):
 
-        url_update_Aviation_Authority = "http://127.0.0.1:8000/test/"
+        url_update_Aviation_Authority = authority_url
         is_new_flight = self._state.adding
         duration_time = self.duration_time.seconds
 
-        if is_new_flight:   
+        if is_new_flight:
             data = {
-                "flight_code": self.flight_code, 
+                "flight_code": self.flight_code,
                 "departure_datetime": self.departure_date_time,
                 "arrival_datetime": self.arrival_date_time,
                 "duration_time": duration_time,
@@ -57,14 +57,15 @@ class Flight(models.Model):
                 "destination_airport": self.destination_airport.ident,
             }
             r = requests.post(url_update_Aviation_Authority, data=data)
-            if r.status_code == 204:
+
+            if r.status_code == 201:
                 print("Flight sent successfully")
                 super(Flight, self).save(*args, **kwargs)
             else:
                 print("Unsuccessfull")
         else:
             data = {
-                "flight_code": self.flight_code, 
+                "flight_code": self.flight_code,
                 "departure_datetime": self.departure_date_time,
                 "arrival_datetime": self.arrival_date_time,
                 "duration_time": duration_time,
@@ -75,20 +76,20 @@ class Flight(models.Model):
                 "departure_airport": self.departure_airport.ident,
                 "destination_airport": self.destination_airport.ident,
             }
-            
+
             r = requests.patch(url_update_Aviation_Authority, data=data)
 
-            if r.status_code == 204:
+            if r.status_code == 204 or r.status_code == 200:
                 super(Flight, self).save(*args, **kwargs)
                 print("Flight sent successfully")
             else:
                 print("Unsuccessfull save")
 
     def delete(self, using=None, keep_parents=False):
-        url = f'http://127.0.0.1:8000/test/?flight_code={self.flight_code}'
+        url = f'http://sc20osc.pythonanywhere.com/api/flights/?flight_code={self.flight_code}'
         response = requests.delete(url)
 
-        if response.status_code == 204:
+        if response.status_code == 200:
             super().delete(using=using, keep_parents=keep_parents)
             print('flight deleted.')
         else:
@@ -97,7 +98,7 @@ class Flight(models.Model):
 
     def __str__(self):
         return self.airline.name
-    
+
 
 class Booking(models.Model):
     bookingRef = models.CharField(unique=True, max_length= 20, primary_key=True, null=False)
