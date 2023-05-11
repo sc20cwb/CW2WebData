@@ -9,15 +9,17 @@ random.seed(42)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        with open(file_path, newline='', encoding='utf-8') as csvfile:
+            with open(file_path, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
-                airports = random.sample(list(reader), 100)
-                
-                for row in airports:
-                    # If airport already exists by ident or name, skip it
+                for i, row in enumerate(reader):
+                    # Do only 100 airports, every 700th airport
+                    if i % 700 != 0:
+                        continue            
+                    
                     Airport.objects.create(
                         ident=row['ident'],
                         name=row['name'],
                         city=row['city'],
-                        country = row['country']
+                        country=row['country'],
                     )
+

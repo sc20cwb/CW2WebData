@@ -26,7 +26,7 @@ def newBooking(request):
 
                 #Update number of available seats in the database:
                 flight.available_seats -= 1
-                flight.save()
+                super(Flight, flight).save()
                 return True
             else:
                 return False
@@ -46,7 +46,7 @@ def cancelBooking(request):
     print(request.GET.get('booking_ref'))
     flight = booking.flight
     flight.available_seats +=1
-    flight.save()
+    super(Flight, flight).save()
     
     if booking:
         booking.delete()
